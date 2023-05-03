@@ -83,7 +83,7 @@ fn main() {
     }
     let graph = WeightedGraph::new(&records);
     let clusters = kmeans_cluster(20, graph);
-    for cluster in clusters {
+    for cluster in &clusters {
         let data_objs: Vec<DataObject> = cluster.iter().map(|dp| {DataObject::from(dp)}).collect();
         let mut race_map: HashMap<String, usize> = HashMap::new();
         let mut weapon_map: HashMap<String, usize> = HashMap::new();
@@ -117,6 +117,62 @@ fn main() {
         }
         println!("Maxes: weapon: {max_weapon}:{max_weapon_cnt}, race: {max_race}:{max_race_cnt}")
     }
+    for (i, cluster) in clusters.iter().enumerate() {
+        println!("\n\nCluster {} (lat={}, lon={}):\n------------------", i+1, cluster[0].lat, cluster[0].lon);
+        println!("Weapons:\n--------");
+        let mut weapons_map: HashMap<String, usize> = HashMap::new();
+        for node in cluster.iter() {
+            if let Some(count) = weapons_map.get(&node.weapon) {
+                weapons_map.insert(node.weapon.clone(), *count+1);
+            } else {
+                weapons_map.insert(node.weapon.clone(), 1);
+            }
+        }
+        let mut race_map: HashMap<String, usize> = HashMap::new();
+        for node in cluster.iter() {
+            if let Some(count) = race_map.get(&node.race) {
+                race_map.insert(node.race.clone(), *count+1);
+            } else {
+                race_map.insert(node.race.clone(), 1);
+            }
+        }
+        let mut count_weapon = 0;
+        for weapon in weapons_map.keys() {            
+            if let Some(count) = weapons_map.get(weapon) {
+                count_weapon += count;
+            }
+        }
+        for weapon in weapons_map.keys() {            
+            if let Some(count) = weapons_map.get(weapon) {
+                let percentage = ((*count as f64 / count_weapon as f64) * 100.0) as usize;
+                println!("{weapon:15}: {:3}% |{}|", percentage, get_percentage_string(percentage));
+            }
+        }
+        println!("\n\nRace:\n--------------");
+        let mut count_race = 0;
+        for race in race_map.keys() {            
+            if let Some(count) = race_map.get(race) {
+                count_race += count;
+            }
+        }
+        for race in race_map.keys() {            
+            if let Some(count) = race_map.get(race) {
+                let percentage = ((*count as f64 / count_race as f64) * 100.0) as usize;
+                println!("{race:15}: {:3}% |{}|", percentage, get_percentage_string(percentage));
+            }
+        }
+    }
+}
+
+fn get_percentage_string(percentage: usize) -> String {
+    let mut output = String::new();
+    for _ in 0..percentage {
+        output.push('-');
+    }
+    for _ in 0..(100-percentage) {
+        output.push(' ');
+    }
+    output
 }
 
 fn kmeans_cluster(k: usize, graph: WeightedGraph) -> Vec<Vec<DataPoint>> {
@@ -197,3 +253,14 @@ fn test_calculate_average_datapoint() {
 3. For each cluster, calculate the mean point of each cluster
 4. Perform clustering again, using mean point for each cluster as the new clustering central point
 5. Repeat from 2 until the delta(mean) is zero/low*/
+/*
+1. git status #list all files that have changed (probably just ./src/main.rs)
+2. git add ./src/main.rs #in place of ./src/main.rs, you can put any and all files that have changed (including ./src/main.rs)
+3. git commit -m "some meaningful and informative commit message"
+4. git push
+
+if you have made mistakes and want to undo to the last git push:
+1. git stash
+if you want to redo the changes that were reverted with `git stash`:
+1. git stash apply
+ */
