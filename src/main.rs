@@ -11,7 +11,7 @@ struct DataPoint {
 }
 
 impl DataPoint {
-    fn new(lat: &str, lon: &str, weapon: &str, race: &str) -> Self {
+    fn new(lat: &str, lon: &str, weapon: &str, race: &str) -> Self {    
         Self {
             lat: lat.parse().unwrap(),
             lon: lon.parse().unwrap(),
@@ -82,7 +82,7 @@ fn main() {
         records.push(dp);
     }
     let graph = WeightedGraph::new(&records);
-    let clusters = kmeans_cluster(6, graph);
+    let clusters = kmeans_cluster(20, graph);
     for cluster in clusters {
         let data_objs: Vec<DataObject> = cluster.iter().map(|dp| {DataObject::from(dp)}).collect();
         let mut race_map: HashMap<String, usize> = HashMap::new();
